@@ -1,6 +1,5 @@
-import 'package:barcode_scan/barcode_scan.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:qr_code_scanner/qr_code_scanner.dart';
 
 void main() {
   runApp(new MyApp());
@@ -12,6 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  final GlobalKey qrKey = GlobalKey();
   String barcode = "";
 
   @override
@@ -21,37 +21,26 @@ class _MyAppState extends State<MyApp> {
         appBar: AppBar(
           title: Text('Barcode Scanner Example'),
         ),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              RaisedButton(
-                child: Text('Scan'),
-                onPressed: () async {
-                  try {
-                    String barcode = await BarcodeScanner.scan();
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: QRView(
+                key: qrKey,
+                onQRViewCreated: (controller) {
+                  controller.scannedDataStream.listen((value) {
                     setState(() {
-                      this.barcode = barcode;
+                      barcode = value;
                     });
-                  } on PlatformException catch (error) {
-                    if (error.code == BarcodeScanner.CameraAccessDenied) {
-                      setState(() {
-                        this.barcode = 'Izin kamera tidak diizinkan oleh si pengguna';
-                      });
-                    } else {
-                      setState(() {
-                        this.barcode = 'Error: $error';
-                      });
-                    }
-                  }
+                  });
                 },
               ),
-              Text(
-                'Result: $barcode',
-                textAlign: TextAlign.center,
+            ),
+            Expanded(
+              child: Center(
+                child: Text('Result: $barcode'),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
